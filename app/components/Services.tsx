@@ -190,6 +190,7 @@ const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min)
 
 /* ─── Component ─────────────────────────────────────────────────────────────── */
 export default function ServicesAndContact() {
+  const [mounted, setMounted] = useState(false);
   const [activeCategory, setActiveCategory] = useState<Category>('website');
   const [activeIndex,    setActiveIndex]    = useState(0);
 
@@ -203,8 +204,15 @@ export default function ServicesAndContact() {
 
   const cards = servicesData[activeCategory];
 
+  // ✅ Mounted guard - kritis untuk hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   /* ── Core: apply styles real-time per scroll frame ── */
   const applyStyles = useCallback(() => {
+    if (!mounted) return; // ✅ Guard mounted
+    
     const carousel = carouselRef.current;
     if (!carousel) return;
 
@@ -238,7 +246,7 @@ export default function ServicesAndContact() {
     });
 
     setActiveIndex(closestIdx);
-  }, []);
+  }, [mounted]);
 
   /* ── scrollToCard ── */
   const scrollToCard = useCallback((index: number) => {
@@ -285,19 +293,30 @@ export default function ServicesAndContact() {
 
   /* ── Category reset ── */
   useEffect(() => {
+    if (!mounted) return; // ✅ Guard mounted
+    
     setActiveIndex(0);
-    cardRefs.current = [];
+    // ✅ Jangan reset dengan [], gunakan array baru dengan ukuran
+    cardRefs.current = new Array(cards.length);
+    
     const carousel = carouselRef.current;
     if (carousel) {
       carousel.style.scrollBehavior = 'auto';
       carousel.scrollLeft = 0;
     }
+    
+    // ✅ Delay untuk biar layout sudah fix
     const t = setTimeout(() => {
       scrollToCard(0);
-      requestAnimationFrame(applyStyles);
-    }, 60);
+      // ✅ Delay lagi applyStyles
+      const rAf = requestAnimationFrame(() => {
+        setTimeout(() => applyStyles(), 50);
+      });
+      return () => cancelAnimationFrame(rAf);
+    }, 100);
+    
     return () => clearTimeout(t);
-  }, [activeCategory, scrollToCard, applyStyles]);
+  }, [activeCategory, scrollToCard, applyStyles, mounted, cards.length]);
 
   /* ── Mouse drag ── */
   const onMouseDown = (e: React.MouseEvent) => {
@@ -338,14 +357,25 @@ export default function ServicesAndContact() {
   const goPrev = () => scrollToCard(Math.max(activeIndex - 1, 0));
   const goNext = () => scrollToCard(Math.min(activeIndex + 1, cards.length - 1));
 
+  // ✅ Jangan render sampai mounted
+  if (!mounted) {
+    return (
+      <div className="bg-wrapper" suppressHydrationWarning>
+        <section className="section" />
+      </div>
+    );
+  }
+
   useEffect(() => {
+    if (!mounted || typeof window === "undefined") return; // ✅ Guard browser API
+    
     const obs = new IntersectionObserver(
       (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('anim-in'); }),
       { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
     document.querySelectorAll('.anim').forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, [mounted]);
 
   return (
     <>
