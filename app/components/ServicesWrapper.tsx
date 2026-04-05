@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from 'next/dynamic';
 
 // ✅ CRITICAL FIX untuk Vercel production
