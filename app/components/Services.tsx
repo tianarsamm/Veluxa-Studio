@@ -349,7 +349,7 @@ export default function ServicesAndContact() {
 
   return (
     <>
-      <div className="bg-wrapper">
+      <div className="bg-wrapper" suppressHydrationWarning>
 
         <section id="services" className="section anim">
           <h3 className="title anim">Layanan Kami</h3>

@@ -30,7 +30,7 @@ export default function HomePage() {
   }, []);
   return (
     <>
-      <div className="hero-wrapper">
+      <div className="hero-wrapper" suppressHydrationWarning>
 
         {/* NAVBAR */}
         <nav className="navbar">
