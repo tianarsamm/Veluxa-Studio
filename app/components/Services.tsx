@@ -357,15 +357,6 @@ export default function ServicesAndContact() {
   const goPrev = () => scrollToCard(Math.max(activeIndex - 1, 0));
   const goNext = () => scrollToCard(Math.min(activeIndex + 1, cards.length - 1));
 
-  // ✅ Jangan render sampai mounted
-  if (!mounted) {
-    return (
-      <div className="bg-wrapper" suppressHydrationWarning>
-        <section className="section" />
-      </div>
-    );
-  }
-
   useEffect(() => {
     if (!mounted || typeof window === "undefined") return; // ✅ Guard browser API
     
@@ -376,6 +367,15 @@ export default function ServicesAndContact() {
     document.querySelectorAll('.anim').forEach(el => obs.observe(el));
     return () => obs.disconnect();
   }, [mounted]);
+
+  // ✅ Jangan render sampai mounted
+  if (!mounted) {
+    return (
+      <div className="bg-wrapper" suppressHydrationWarning>
+        <section className="section" />
+      </div>
+    );
+  }
 
   return (
     <>
